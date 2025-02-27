@@ -50,6 +50,7 @@ namespace Solitaire_major_project
             Image = Image.FromFile(imagefile);
             MouseMove += new MouseEventHandler(Card_MouseMove);
             MouseDown += new MouseEventHandler(Card_MouseDown);
+            MouseUp += new MouseEventHandler(Card_MouseUp);
             SizeMode = PictureBoxSizeMode.StretchImage;
             Margin = new Padding(0, 0, 0, 0);
             Width = 115;
@@ -89,7 +90,21 @@ namespace Solitaire_major_project
                 this.Top += e.Y - 85;
             }
         }
+        private void Card_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                dragging = false;
+                if(!validmove(this, e.Location))
+                {
+                    this.Location = originalpos; //resets position if move is invalid.
+                }
+                else
+                {
 
+                }
+            }
+        }
     }
     class deck
     {

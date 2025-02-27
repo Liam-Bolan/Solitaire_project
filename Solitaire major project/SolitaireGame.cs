@@ -26,7 +26,7 @@ namespace Solitaire_major_project
             InitializeComponent();
         }
         private void SolitaireGame_Load(object sender, EventArgs e)
-        {       
+        {
             Deck.Shuffle();
             pictureBox1.Top = 53;
             pictureBox1.Left = 55;
@@ -45,10 +45,10 @@ namespace Solitaire_major_project
             }
 
             PictureBox drawButton = new PictureBox();
-            
+
 
             //generates the tableaus
-            for (int cols = 7; cols >0; cols--)
+            for (int cols = 7; cols > 0; cols--)
             {
                 CardColumn[cols] = new List<Card>();
                 for (int i = cols; i > 0; i--)
@@ -58,21 +58,21 @@ namespace Solitaire_major_project
                     c.GameLoc = "Column" + cols;
                     CardColumn[cols].Add(c);
                     if (i == cols) { c.flip(); }
-                    c.Location = new Point(975 - (150*(7-cols)), 300 + 8 * i);
+                    c.Location = new Point(975 - (150 * (7 - cols)), 300 + 8 * i);
                     c.Parent = this;
 
                 }
 
             }
             //generate the aceboxes
-            for(int i = 0; i < 4; i++)
-            { 
+            for (int i = 0; i < 4; i++)
+            {
                 acebox a = new acebox();
                 SuitPiles[i] = new List<Card>();
-                a.Location = new Point(585+130 * i,50);
+                a.Location = new Point(585 + 130 * i, 50);
                 a.Parent = this;
             }
-            
+
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -84,13 +84,13 @@ namespace Solitaire_major_project
         {
             int posx = 180;
 
-            if(GamePile.Count == 0)
+            if (GamePile.Count == 0)
             {
                 for (int i = TurnedCards.Length - 1; i >= 0; i--)
                 {
-                    if (TurnedCards[i] != null) // card is not null
+                    if (TurnedCards[i] != null)
                     {
-                        GamePile.Add(TurnedCards[i]); // Adds card back to  stockpile
+                        GamePile.Add(TurnedCards[i]); // Adds card back to stockpile
                         TurnedCards[i] = null; // Clears card from TurnedCards
                     }
                 }
@@ -98,10 +98,22 @@ namespace Solitaire_major_project
             }
             for (int i = 0; i < 3; i++)
             {
-                if (GamePile.Count == 0) 
-                break;
+                if (GamePile.Count == 0)
+                    break;
+
+                Card drawnCard = GamePile.Last();
+                GamePile.RemoveAt(GamePile.Count - 1);
+
+                drawnCard.flip();
+                drawnCard.Left = posx;
+                drawnCard.Top = 53;
+                drawnCard.BringToFront();
+
+                TurnedCards[i] = drawnCard;
+
             }
             posx += 60;
+
         }
         private void SolitaireGame_MouseDown(object sender, MouseEventArgs e)
         {
@@ -109,16 +121,16 @@ namespace Solitaire_major_project
             Rectangle GamePileRect = new Rectangle(55, 53, 115, 170);
             if (GamePileRect.IntersectsWith(Mouse))
             {
-                Drawstockpile();                              
+                Drawstockpile();
             }
-            
-                      
+
+
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             int pos2 = 250;
-            
+
             //draws the cards from the stock pile after every click and until theres no more left.
             if (e.Button == MouseButtons.Left)
             {
@@ -126,7 +138,7 @@ namespace Solitaire_major_project
                 for (int i = 0; i < 3; i++)
                 {
                     if (TurnedCards[i] != null)
-                    { 
+                    {
                         TurnedCards[i].flip();
                         TurnedCards[i].Left = 55;
                         TurnedCards[i].Top = 53;
@@ -136,16 +148,26 @@ namespace Solitaire_major_project
                     TurnedCards[i].flip();
                     TurnedCards[i].Left += pos2;
 
-                    if(GamePile.Count > 3)
+                    if (GamePile.Count > 3)
                     {
                         GamePile.Add(TurnedCards[i]);
                     }
                     pos2 -= 60;
                     pos++;
                 }
-                                                
+
             }
-            
+
         }
+        private bool validmove(Card c3, Point location)
+        {
+
+        }
+
     }
 }
+
+
+        
+    
+
