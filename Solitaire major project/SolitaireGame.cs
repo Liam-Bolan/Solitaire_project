@@ -82,39 +82,38 @@ namespace Solitaire_major_project
         }
         private void Drawstockpile()
         {
-            int posx = 180;
+            for (int i = 0; i < Math.Min(3, GamePile.Count); i++)  // Ensure no more than 3 cards are drawn
+            {
+                if (TurnedCards[i] != null && TurnedCards[i].faceup)
+                {
+                    TurnedCards[i].flip(); // Flip turned cards back if they are face up
+                    TurnedCards[i] = null;
+                }
+            }
 
             if (GamePile.Count == 0)
             {
-                for (int i = TurnedCards.Length - 1; i >= 0; i--)
-                {
-                    if (TurnedCards[i] != null)
-                    {
-                        GamePile.Add(TurnedCards[i]); // Adds card back to stockpile
-                        TurnedCards[i] = null; // Clears card from TurnedCards
-                    }
-                }
+                // No cards to draw from, so recycle the stockpile
+                RecycleStockpile();
                 return;
             }
-            for (int i = 0; i < 3; i++)
-            {
-                if (GamePile.Count == 0)
-                    break;
-
-                Card drawnCard = GamePile.Last();
-                GamePile.RemoveAt(GamePile.Count - 1);
-
-                drawnCard.flip();
-                drawnCard.Left = posx;
-                drawnCard.Top = 53;
-                drawnCard.BringToFront();
-
-                TurnedCards[i] = drawnCard;
-
-            }
-            posx += 60;
-
         }
+        private void RecycleStockpile()
+        {
+            // Reverse the cards and flip them back
+            foreach (Card c in TurnedCards)
+            {
+                if (c != null && !c.faceup)
+                {
+                    c.flip(); // Flip face down cards to face up
+                }
+                GamePile.Add(c); // Add cards back to the pile for recycling
+            }
+            pos = 0;
+            TurnedCards = new Card[3]; // Clear the turned cards array
+        }
+
+
         private void SolitaireGame_MouseDown(object sender, MouseEventArgs e)
         {
             Rectangle Mouse = new Rectangle(e.X, e.Y, 1, 1);
@@ -135,7 +134,7 @@ namespace Solitaire_major_project
             if (e.Button == MouseButtons.Left)
             {
                 pictureBox1.BringToFront();
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < Math.Min(3, GamePile.Count); i++)
                 {
                     if (TurnedCards[i] != null)
                     {
@@ -159,13 +158,37 @@ namespace Solitaire_major_project
             }
 
         }
-        private bool validmove(Card c3, Point location)
+        private List<Card> GetTargetPile(Point dropLocation)
         {
+            // Check if the drop location is within the bounds of any tableau or acebox
+            for (int i = 0; i < 8; i++)
+            {
+                // Example check for tableau columns (adjust coordinates as per your layout)
+                Rectangle tableauRect = new Rectangle(100 + (150 * i), 300, 115, 170);
+                if (tableauRect.Contains(dropLocation))
+                {
+                    return CardColumn[i]; // Return the corresponding tableau column
+                }
+            }
 
+            // Check for acebox (adjust coordinates as per your layout)
+            for (int i = 0; i < 4; i++)
+            {
+                Rectangle aceboxRect = new Rectangle(585 + (130 * i), 50, 115, 170);
+                if (aceboxRect.Contains(dropLocation))
+                {
+                    return SuitPiles[i]; // Return the corresponding acebox
+                }
+            }
+
+            return null; // No valid target pile found
         }
-
     }
 }
+
+
+    
+
 
 
         

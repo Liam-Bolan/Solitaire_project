@@ -10,21 +10,22 @@ using System.Windows.Markup;
 
 namespace Solitaire_major_project
 {
-    public enum suits
-    {
-        hearts,diamonds,spades,clubs
-    }
+
     class Card : PictureBox
     {
         private string[] names = { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
-        private string[] suits = { "hearts", "diamonds", "spades", "clubs" };
+        public enum suits
+        {
+            hearts, diamonds, spades, clubs
+        }
+
         private Point originalpos;
         private bool dragging = false;
-        public int value { get; set; }
-        public suits suit { get; set; }
+        private int value { get; set; }
+        private suits suit { get; set; }
 
         public string GameLoc { get; set; }
-       
+
         public bool faceup { get; set; }
 
         public string name()
@@ -32,16 +33,16 @@ namespace Solitaire_major_project
             return names[value - 1];
         }
 
-        public Card(int v ,int s, bool isfaceup) : base()
+        public Card(int v, int s, bool isfaceup) : base()
         {
             value = v;
             suit = (suits)s;
             faceup = isfaceup;
 
-            string imagefile="";
+            string imagefile = "";
             if (faceup)
             {
-                imagefile = "../../resources/" + names[value - 1] + "_of_" + suits[(int)suit] + ".png";
+                imagefile = "../../resources/" + names[value - 1] + "_of_" + suits[s] + ".png";
             }
             if (!faceup)
             {
@@ -55,6 +56,10 @@ namespace Solitaire_major_project
             Margin = new Padding(0, 0, 0, 0);
             Width = 115;
             Height = 170;
+        }
+        public string GetCardColor()
+        {
+            return (this.suit == suits.hearts || this.suit == suits.diamonds) ? "Red" : "Black";
         }
 
         public void flip()
@@ -72,7 +77,7 @@ namespace Solitaire_major_project
             }
             Image = Image.FromFile(imagefile);
         }
-        
+
         private void Card_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left && faceup == true)
@@ -90,91 +95,125 @@ namespace Solitaire_major_project
                 this.Top += e.Y - 85;
             }
         }
+        public bool IsValidMove(List<Card> targetPile)
+        {
+            // If the target pile is empty, only a King can be placed
+            if (targetPile.Count == 0)
+            {
+                return this.value == 13; // Only King can go on an empty pile
+            }
+
+            Card topCard = targetPile.Last();
+
+            // Cards must be in descending order and alternate colors (Red/Black)
+            return (this.value == topCard.value - 1) && (this.GetCardColor() != topCard.GetCardColor());
+        }
+        public bool IsAceboxValidMove(List<Card> acePile)
+        {
+            // Aces should be placed first
+            if (acePile.Count == 0)
+            {
+                return this.value == 1; // Ace is 1
+            }
+
+            // Cards must be in ascending order of value for ace pile
+            Card topCard = acePile.Last();
+            return (this.value == topCard.value + 1); // Next card in sequence
+        }
         private void Card_MouseUp(object sender, MouseEventArgs e)
         {
             if (dragging)
             {
                 dragging = false;
-                if(!validmove(this, e.Location))
+
+                Point dropLocation = e.Location; // Get the drop location
+
+                // Determine the target pile
+                List<Card> targetPile = GetTargetPile(dropLocation);
+
+                if (targetPile != null && IsValidMove(targetPile))
                 {
-                    this.Location = originalpos; //resets position if move is invalid.
+                    // Move the card to the target pile (tableau or acebox)
+                    this.Location = dropLocation; // Update card location to drop location
+                    targetPile.Add(this); // Add the card to the target pile
                 }
                 else
                 {
-
+                    // If the move is invalid, reset the card's position
+                    this.Location = originalpos;
                 }
             }
         }
-    }
-    class deck
-    {
-        private Card[] cards = new Card[52];
-        private int pos = 0;
-
-        public deck()
+        class deck
         {
-            for (int s = 0; s < 4; s++)
+            private Card[] cards = new Card[52];
+            private int pos = 0;
+
+            public deck()
             {
-                for (int v = 0; v < 13; v++)
+                for (int s = 0; s < 4; s++)
                 {
-                    Card c = new Card(v+1,s,false);
-                    cards[s * 13 + v] = c;
+                    for (int v = 0; v < 13; v++)
+                    {
+                        Card c = new Card(v + 1, s, false);
+                        cards[s * 13 + v] = c;
+                    }
                 }
             }
-        }
-        public Card Draw()
-        {
-            pos++;
-            return cards[pos - 1];
-        }
-        public void Shuffle()
-        {
-            Random r = new Random();
-            for (int i = 0; i < 200; i++)
+            public Card Draw()
             {
-                /* shuffles cards into a random order */
-                int ran = r.Next(0, 52);
-                int ran2 = r.Next(0, 52);
-                Card c1 = cards[ran];
-                cards[ran] = cards[ran2];
-                cards[ran2] = c1;
-                
+                pos++;
+                return cards[pos - 1];
             }
-       
+            public void Shuffle()
+            {
+                Random r = new Random();
+                for (int i = 0; i < 20660; i++)
+                {
+                    /* shuffles cards into a random order */
+                    int ran = r.Next(0, 52);
+                    int ran2 = r.Next(0, 52);
+                    Card c1 = cards[ran];
+                    cards[ran] = cards[ran2];
+                    cards[ran2] = c1;
+
+                }
+
+            }
+
         }
-        
-    }
-    class acebox : PictureBox
-    {
-        public acebox()
+        class acebox : PictureBox
         {
-            /* this is the constructor for the acebox method which creates 1 acebox where the cards go in order 
-             of value and suit i.e Ace of spades, 1 of spades and so on */
+            public acebox()
+            {
+                /* this is the constructor for the acebox method which creates 1 acebox where the cards go in order 
+                 of value and suit i.e Ace of spades, 1 of spades and so on */
 
-            string imagefile = "";
+                string imagefile = "";
 
-            imagefile = "../../resources/" + "acebox" + ".png";
-            Image = Image.FromFile(imagefile);
-            SizeMode = PictureBoxSizeMode.StretchImage;
-            Margin = new Padding(0, 0, 0, 0);
-            Width = 115;
-            Height = 170;
+                imagefile = "../../resources/" + "acebox" + ".png";
+                Image = Image.FromFile(imagefile);
+                SizeMode = PictureBoxSizeMode.StretchImage;
+                Margin = new Padding(0, 0, 0, 0);
+                Width = 115;
+                Height = 170;
+            }
+
         }
-        
-    }
-    class boxdeck 
-    {
-        //instantiates an array of aceboxes 
-        private acebox[] aceboxes = new acebox[4];
-        private int pos = 0;
-
-        public acebox Draw()
+        class boxdeck
         {
-            //prints the ace boxes on screen side by side
-            pos++;
-            return aceboxes[pos - 1];
-        }
-    }
-    
+            //instantiates an array of aceboxes 
+            private acebox[] aceboxes = new acebox[4];
+            private int pos = 0;
 
+            public acebox Draw()
+            {
+                //prints the ace boxes on screen side by side
+                pos++;
+                return aceboxes[pos - 1];
+            }
+        }
+
+    }
 }
+

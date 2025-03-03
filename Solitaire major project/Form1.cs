@@ -19,11 +19,13 @@ namespace Solitaire_major_project
 
         private void button2_Click(object sender, EventArgs e)
         {
+            //quit button
             Application.Exit();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
         {
+            //start game button
             this.Hide();
             SolitaireGame SG = new SolitaireGame();
             SG.Show();
